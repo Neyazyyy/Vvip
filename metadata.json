@@ -1,0 +1,6 @@
+{
+  "name": "Township VIP Manager",
+  "description": "Township VIP Save & Backup Manager tool for managing game saves, town configurations, inventory assets, and data sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
