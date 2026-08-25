@@ -17,8 +17,10 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install Dependencies Properly
-      run: npm install --include=optional --force
+    - name: Clean and Install Dependencies
+      run: |
+        rm -rf node_modules package-lock.json
+        npm install
 
     - name: Build Web Assets
       run: npm run build --if-present
