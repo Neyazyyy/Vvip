@@ -7,7 +7,7 @@ interface ApkBuildGuideModalProps {
 }
 
 export const ApkBuildGuideModal: React.FC<ApkBuildGuideModalProps> = ({ onClose, onShowToast }) => {
-  const [activeTab, setActiveTab] = useState<'CAPACITOR' | 'STUDIO' | 'ONLINE'>('CAPACITOR');
+  const [activeTab, setActiveTab] = useState<'GITHUB' | 'CAPACITOR' | 'STUDIO' | 'ONLINE'>('GITHUB');
 
   const copyCode = (code: string, label: string) => {
     navigator.clipboard.writeText(code);
@@ -58,41 +58,93 @@ export const ApkBuildGuideModal: React.FC<ApkBuildGuideModalProps> = ({ onClose,
         </div>
 
         {/* Method Switcher */}
-        <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#080a10] border border-[#1b2233] rounded-2xl">
+        <div className="grid grid-cols-4 gap-1 p-1 bg-[#080a10] border border-[#1b2233] rounded-2xl">
+          <button
+            type="button"
+            onClick={() => setActiveTab('GITHUB')}
+            className={`py-2 px-1 text-[11px] sm:text-xs rounded-xl font-black transition-all cursor-pointer ${
+              activeTab === 'GITHUB'
+                ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            ⚡ عبر GitHub
+          </button>
           <button
             type="button"
             onClick={() => setActiveTab('CAPACITOR')}
-            className={`py-2 px-1 text-xs rounded-xl font-bold transition-all cursor-pointer ${
+            className={`py-2 px-1 text-[11px] sm:text-xs rounded-xl font-bold transition-all cursor-pointer ${
               activeTab === 'CAPACITOR'
                 ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            1. أمر Capacitor
+            1. Capacitor
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('STUDIO')}
-            className={`py-2 px-1 text-xs rounded-xl font-bold transition-all cursor-pointer ${
+            className={`py-2 px-1 text-[11px] sm:text-xs rounded-xl font-bold transition-all cursor-pointer ${
               activeTab === 'STUDIO'
                 ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            2. Android Studio
+            2. Studio
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('ONLINE')}
-            className={`py-2 px-1 text-xs rounded-xl font-bold transition-all cursor-pointer ${
+            className={`py-2 px-1 text-[11px] sm:text-xs rounded-xl font-bold transition-all cursor-pointer ${
               activeTab === 'ONLINE'
                 ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            3. أدوات سريعة
+            3. أدوات
           </button>
         </div>
+
+        {/* Tab 0: GitHub Actions Auto Build */}
+        {activeTab === 'GITHUB' && (
+          <div className="space-y-3 text-xs leading-relaxed text-gray-300">
+            <div className="p-3.5 bg-[#121622] border border-emerald-500/40 rounded-2xl space-y-2.5">
+              <div className="flex items-center gap-1.5 text-emerald-400 font-black text-xs">
+                <Sparkles className="w-4 h-4" />
+                <span>البناء السحابي التلقائي عبر GitHub Actions (بدون تثبيت أي برامج!)</span>
+              </div>
+              <p className="text-[11px] text-gray-300 leading-relaxed">
+                تم إنشاء ملف سير العمل التلقائي <code className="text-emerald-300 bg-black/50 px-1.5 py-0.5 rounded font-mono">.github/workflows/build-apk.yml</code> داخل المشروع.
+              </p>
+              
+              <div className="space-y-2 text-[11px] text-gray-300 pt-1">
+                <div className="p-2.5 rounded-xl bg-[#080a10] border border-[#1c2233] space-y-1">
+                  <strong className="text-white flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px]">1</span>
+                    تصدير المشروع إلى مستودع GitHub (Export to GitHub)
+                  </strong>
+                  <span className="text-gray-400 block pr-5">من القائمة العلوية أو قائمة الإعدادات، اضغط على <strong>Export to GitHub</strong> لرفع المشروع إلى حسابك.</span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-[#080a10] border border-[#1c2233] space-y-1">
+                  <strong className="text-white flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px]">2</span>
+                    بدء البناء التلقائي (GitHub Actions)
+                  </strong>
+                  <span className="text-gray-400 block pr-5">سيقوم جيت هب تلقائياً بتجميع كود الأندرويد مع الروت ومكتبات Gradle وإنشاء الـ APK خلال دقيقتين.</span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-[#080a10] border border-[#1c2233] space-y-1">
+                  <strong className="text-white flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px]">3</span>
+                    تنزيل ملف الـ APK وتثبيته
+                  </strong>
+                  <span className="text-gray-400 block pr-5">ادخل على تبويب <strong>Actions</strong> داخل مستودعك، ثم اضغط على البناء الأخير وحمّل حزمة <strong>TownshipVIP-Debug-APK</strong> فوراً!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tab 1: Capacitor CLI */}
         {activeTab === 'CAPACITOR' && (
