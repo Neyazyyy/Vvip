@@ -32,9 +32,9 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
 
-      - name: Update Capacitor and Build Android
+      - name: Sync and Build Capacitor Android
         run: |
-          npx cap update android
+          npx cap sync android
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
