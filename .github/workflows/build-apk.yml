@@ -35,9 +35,10 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
 
-    - name: Add Android Platform & Build APK
+    - name: Clean, Add Android & Build APK
       run: |
-        npx cap add android || npx cap sync android
+        rm -rf android
+        npx cap add android
         cd android
         chmod +x gradlew
         ./gradlew assembleDebug
