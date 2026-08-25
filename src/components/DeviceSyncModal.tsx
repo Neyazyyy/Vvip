@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Smartphone,
   CheckCircle2,
@@ -11,11 +11,13 @@ import {
   FileCode,
   FileCheck,
   HardDrive,
-  Info
+  Info,
+  Edit2,
+  RefreshCw
 } from 'lucide-react';
-import { SaveSlot } from '../types/index';
+import { SaveSlot, AndroidDevice } from '../types/index';
 import { StorageService, SecurityValidator } from '../services/storageService';
-import { AndroidBridgeService } from '../services/androidBridgeService';
+import { AndroidBridgeService, detectRealClientDevice } from '../services/androidBridgeService';
 import { useLanguage } from '../context/LanguageContext';
 import confetti from 'canvas-confetti';
 
@@ -31,15 +33,46 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({
   activeSlot,
 }) => {
   const { t, isRtl } = useLanguage();
+  const [device, setDevice] = useState<AndroidDevice | null>(null);
+  const [isEditingDevice, setIsEditingDevice] = useState(false);
+  const [customDeviceModel, setCustomDeviceModel] = useState('');
   const [devicePath, setDevicePath] = useState(
-    '/storage/emulated/0/Android/data/com.playrix.township/files/save/'
+    '/data/data/com.playrix.township/databases/nedata.db'
   );
   const [isPushing, setIsPushing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [copiedPath, setCopiedPath] = useState(false);
   const [downloadedFileName, setDownloadedFileName] = useState('');
 
+  useEffect(() => {
+    if (isOpen) {
+      const currentDev = AndroidBridgeService.getDevice() || detectRealClientDevice();
+      setDevice(currentDev);
+      setCustomDeviceModel(currentDev.model);
+      if (currentDev.targetStoragePath) {
+        setDevicePath(currentDev.targetStoragePath);
+      }
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  const handleSaveDeviceModel = () => {
+    if (device && customDeviceModel.trim()) {
+      const updated = { ...device, model: customDeviceModel.trim() };
+      setDevice(updated);
+      AndroidBridgeService.updateDevice({ model: customDeviceModel.trim() });
+      setIsEditingDevice(false);
+    }
+  };
+
+  const handleRefreshRealDevice = () => {
+    const real = detectRealClientDevice();
+    setDevice(real);
+    setCustomDeviceModel(real.model);
+    AndroidBridgeService.updateDevice(real);
+    confetti({ particleCount: 40, spread: 60 });
+  };
 
   const handleCopyPath = async () => {
     try {
@@ -172,17 +205,68 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({
           </button>
         </div>
 
-        {/* Device Status Bar */}
-        <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <Wifi className="w-4 h-4 text-emerald-400" />
-            <span className="text-slate-200 font-medium font-mono">
-              {t.deviceConnected}: Android Device (Redmi / Samsung / Xiaomi)
-            </span>
+        {/* Device Status Bar - Shows Real Connected / Synchronized Device */}
+        <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/80 space-y-2 text-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wifi className="w-4 h-4 text-emerald-400 animate-pulse" />
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-slate-400 font-medium">
+                  {t.deviceConnected}:
+                </span>
+                {!isEditingDevice ? (
+                  <strong className="text-white font-mono font-semibold bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
+                    {device ? `${device.manufacturer} ${device.model}` : detectRealClientDevice().model}
+                  </strong>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="text"
+                      value={customDeviceModel}
+                      onChange={(e) => setCustomDeviceModel(e.target.value)}
+                      className="bg-slate-950 border border-amber-500 rounded px-2 py-0.5 text-xs text-amber-300 font-mono focus:outline-none"
+                      placeholder="اسم الجهاز..."
+                    />
+                    <button
+                      onClick={handleSaveDeviceModel}
+                      className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold"
+                    >
+                      حفظ
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleRefreshRealDevice}
+                title="تحديث والكشف التلقائي عن الهاتف"
+                className="p-1 text-slate-400 hover:text-emerald-400 rounded hover:bg-slate-700 transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setIsEditingDevice(!isEditingDevice)}
+                title="تعديل اسم الجهاز يدوياً"
+                className="p-1 text-slate-400 hover:text-amber-400 rounded hover:bg-slate-700 transition-colors"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+              </button>
+              <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30 text-[11px]">
+                {t.deviceStatusConnected}
+              </span>
+            </div>
           </div>
-          <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30 text-[11px]">
-            {t.deviceStatusConnected}
-          </span>
+
+          {/* Quick Hardware Specs Info */}
+          {device && (
+            <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-1 border-t border-slate-750">
+              <span>{device.androidVersion} (API {device.apiLevel})</span>
+              <span className="text-emerald-400 font-semibold">S/N: {device.serialNumber}</span>
+              <span className="text-slate-300">{device.batteryLevel}% ⚡</span>
+            </div>
+          )}
         </div>
 
         {/* Target Package & Path with Copy Button */}

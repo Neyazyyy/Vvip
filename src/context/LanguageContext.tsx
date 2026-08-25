@@ -364,6 +364,44 @@ export interface Translations {
   runCmdBtn: string;
   quickAdbCommands: string;
 
+  // Root Power Suite & 3 Methods
+  rootSuiteTitle: string;
+  rootSuiteDesc: string;
+  rootModeActiveBadge: string;
+  rootPathDbTitle: string;
+  rootPathPrefsTitle: string;
+  rootMethod1Title: string;
+  rootMethod1Desc: string;
+  rootMethod2Title: string;
+  rootMethod2Desc: string;
+  rootMethod3Title: string;
+  rootMethod3Desc: string;
+  downloadRootScriptBtn: string;
+  downloadDeployShBtn: string;
+  downloadGgScriptBtn: string;
+  downloadPrefsXmlBtn: string;
+  copyShellCommandsBtn: string;
+  copyDeployShBtn: string;
+  copyGgScriptBtn: string;
+  runRootLiveBtn: string;
+  permissionsLabel: string;
+  permissionsVal: string;
+  ownerLabel: string;
+  ownerVal: string;
+  rootPathDbVal: string;
+  rootPathPrefsVal: string;
+  step1StopGame: string;
+  step2CopyDb: string;
+  step3FixPerms: string;
+  step4LaunchGame: string;
+  toastRootScriptDownloaded: string;
+  toastDeployShDownloaded: string;
+  toastGgScriptDownloaded: string;
+  toastPrefsXmlDownloaded: string;
+  toastCommandsCopied: string;
+  toastDeployShCopied: string;
+  toastGgScriptCopied: string;
+
   // Toast / System Notifications
   toastProfileUpdated: string;
   toastResourcesSynced: string;
@@ -740,6 +778,44 @@ export const translations: Record<Language, Translations> = {
     runCmdBtn: 'تنفيذ',
     quickAdbCommands: 'أوامر سريعة',
 
+    // Root Power Suite & 3 Methods
+    rootSuiteTitle: 'مجموعة أدوات الروت المباشر (Root Power Suite)',
+    rootSuiteDesc: 'أدوات مخصصة لهواتف الروت للحقن والتثبيت الفوري في مسار النظام الداخلي بنجاح 100%',
+    rootModeActiveBadge: 'وضع الروت: نشط',
+    rootPathDbTitle: 'المسار الداخلي لقاعدة البيانات (Root Database Path)',
+    rootPathPrefsTitle: 'مسار التفضيلات المشفرة (Shared Preferences)',
+    rootMethod1Title: 'الطريقة 1: سكريبت الشل والتثبيت الفوري (ADB / Root Shell)',
+    rootMethod1Desc: 'تنفيذ الأوامر بنقرة واحدة عبر Termux أو MT Manager أو موجه الأوامر المباشر بصلاحيات الروت (su)',
+    rootMethod2Title: 'الطريقة 2: دليل MT Manager اليدوي (بصلاحيات الروت)',
+    rootMethod2Desc: 'استبدال ملف nedata.db وضبط الصلاحيات rw-rw---- (660) خطوة بخطوة',
+    rootMethod3Title: 'الطريقة 3: حاقن الذاكرة GameGuardian Lua Script',
+    rootMethod3Desc: 'حقن وتجميد قيم الذهب والكاش والمستوى في الذاكرة العشوائية (RAM) فورياً أثناء تشغيل اللعبة دون استبدال ملفات الحفظ',
+    downloadRootScriptBtn: 'تحميل سكريبت التثبيت (apply_save_root.sh)',
+    downloadDeployShBtn: 'توليد وتحميل سكريبت deploy.sh لـ Termux',
+    downloadGgScriptBtn: 'تحميل سكريبت GameGuardian (.lua)',
+    downloadPrefsXmlBtn: 'تحميل ملف com.playrix.township.xml',
+    copyShellCommandsBtn: 'نسخ أوامر الشل الكاملة',
+    copyDeployShBtn: 'نسخ محتوى deploy.sh بالكامل للـ Termux',
+    copyGgScriptBtn: 'نسخ سكريبت Lua',
+    runRootLiveBtn: 'تشغيل فوري في موجه الأوامر',
+    permissionsLabel: 'الأذونات المطلوبة (Permissions)',
+    permissionsVal: 'rw-rw---- (660)',
+    ownerLabel: 'المالك والمجموعة (Owner / Group)',
+    ownerVal: 'u0_aXXX (معرف حزمة اللعبة التلقائي)',
+    rootPathDbVal: '/data/data/com.playrix.township/databases/nedata.db',
+    rootPathPrefsVal: '/data/data/com.playrix.township/shared_prefs/',
+    step1StopGame: '1. إيقاف اللعبة إجبارياً لمنع قفل الملفات (am force-stop)',
+    step2CopyDb: '2. نسخ nedata.db إلى مسار databases الداخلي',
+    step3FixPerms: '3. ضبط الصلاحيات والملكية rw-rw---- (660) و chown',
+    step4LaunchGame: '4. تشغيل اللعبة بالمحتوى الجديد فوراً',
+    toastRootScriptDownloaded: 'تم تحميل سكريبت apply_save_root.sh بنجاح!',
+    toastDeployShDownloaded: 'تم توليد وتحميل deploy.sh الجاهز للـ Termux بنجاح!',
+    toastGgScriptDownloaded: 'تم تحميل سكريبت GameGuardian Lua بنجاح!',
+    toastPrefsXmlDownloaded: 'تم تحميل ملف Shared Preferences XML بنجاح!',
+    toastCommandsCopied: 'تم نسخ أوامر الشل للحافظة بنجاح!',
+    toastDeployShCopied: 'تم نسخ سكريبت deploy.sh بالكامل للحافظة! الصقه مباشرة في Termux!',
+    toastGgScriptCopied: 'تم نسخ سكريبت GameGuardian Lua للحافظة!',
+
     toastProfileUpdated: 'تم تحديث الملف التعريفي للمدينة بنجاح!',
     toastResourcesSynced: 'تمت مزامنة العملات والموارد مع ملف الحفظ',
     toastInventoryUpdated: 'تم تحديث مخزون الحظيرة بنجاح!',
@@ -1112,6 +1188,44 @@ export const translations: Record<Language, Translations> = {
     clearTerminalBtn: 'Clear Log',
     runCmdBtn: 'Execute',
     quickAdbCommands: 'Quick ADB Actions',
+
+    // Root Power Suite & 3 Methods
+    rootSuiteTitle: 'Root Power Suite (Internal System Injection)',
+    rootSuiteDesc: 'Advanced toolkit for rooted Android devices to bypass file locks and inject save state directly into internal databases',
+    rootModeActiveBadge: 'Root Mode: ACTIVE',
+    rootPathDbTitle: 'Internal Database Root Path',
+    rootPathPrefsTitle: 'Shared Preferences Path',
+    rootMethod1Title: 'Method 1: 1-Click Root Shell Script (apply_save_root.sh)',
+    rootMethod1Desc: 'One-click automated execution for Termux, MT Manager, or ADB Root Shell with su permissions',
+    rootMethod2Title: 'Method 2: Manual MT Manager Root Guide',
+    rootMethod2Desc: 'Step-by-step file replacement and permission configuration: rw-rw---- (660)',
+    rootMethod3Title: 'Method 3: GameGuardian Live Memory Lua Script',
+    rootMethod3Desc: 'Real-time RAM memory injector for coins, t-cash, and barn capacity without file replacement',
+    downloadRootScriptBtn: 'Download apply_save_root.sh',
+    downloadDeployShBtn: 'Download deploy.sh for Termux',
+    downloadGgScriptBtn: 'Download GameGuardian Script (.lua)',
+    downloadPrefsXmlBtn: 'Download SharedPrefs XML',
+    copyShellCommandsBtn: 'Copy All Shell Commands',
+    copyDeployShBtn: 'Copy Full deploy.sh Script for Termux',
+    copyGgScriptBtn: 'Copy Lua Script',
+    runRootLiveBtn: 'Execute Live in ADB Terminal',
+    permissionsLabel: 'Required File Permissions',
+    permissionsVal: 'rw-rw---- (660)',
+    ownerLabel: 'File Owner / Group',
+    ownerVal: 'u0_aXXX (Dynamic App UID)',
+    rootPathDbVal: '/data/data/com.playrix.township/databases/nedata.db',
+    rootPathPrefsVal: '/data/data/com.playrix.township/shared_prefs/',
+    step1StopGame: '1. Force-stop Township process (am force-stop)',
+    step2CopyDb: '2. Copy nedata.db to internal /databases/ directory',
+    step3FixPerms: '3. Set permissions rw-rw---- (660) & chown to app UID',
+    step4LaunchGame: '4. Hot-start Township with modified VIP resources',
+    toastRootScriptDownloaded: 'Successfully downloaded apply_save_root.sh!',
+    toastDeployShDownloaded: 'Successfully generated and downloaded deploy.sh for Termux!',
+    toastGgScriptDownloaded: 'Successfully downloaded GameGuardian Lua script!',
+    toastPrefsXmlDownloaded: 'Successfully downloaded Shared Preferences XML!',
+    toastCommandsCopied: 'Shell commands copied to clipboard!',
+    toastDeployShCopied: 'Full deploy.sh script copied! Paste directly into Termux (su)!',
+    toastGgScriptCopied: 'GameGuardian Lua script copied to clipboard!',
 
     toastProfileUpdated: 'Town profile updated successfully!',
     toastResourcesSynced: 'Currencies and resources synced with save file',

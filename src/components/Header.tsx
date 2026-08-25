@@ -33,6 +33,7 @@ interface HeaderProps {
   onOpenDeviceSync: () => void;
   onOpenSettings?: () => void;
   onOpenBridge?: () => void;
+  onOpenApkModal?: () => void;
   settings?: AppSettings;
 }
 
@@ -48,6 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenDeviceSync,
   onOpenSettings,
   onOpenBridge,
+  onOpenApkModal,
   settings,
 }) => {
   const [slotDropdownOpen, setSlotDropdownOpen] = useState(false);

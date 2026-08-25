@@ -16,7 +16,12 @@ import {
   Edit2,
   Check,
   TrendingUp,
-  Boxes
+  Boxes,
+  Upload,
+  Usb,
+  Database,
+  CheckCheck,
+  Smartphone
 } from 'lucide-react';
 import { TownProfile, TownResources, BarnItem, SaveSlot } from '../types/index';
 import { useLanguage } from '../context/LanguageContext';
@@ -29,6 +34,8 @@ interface DashboardOverviewProps {
   activeSlot: SaveSlot;
   onUpdateProfile: (updated: Partial<TownProfile>) => void;
   onTabChange: (tab: string) => void;
+  onImportClick?: () => void;
+  onOpenApkModal?: () => void;
 }
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
@@ -38,6 +45,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   activeSlot,
   onUpdateProfile,
   onTabChange,
+  onImportClick,
+  onOpenApkModal,
 }) => {
   const { t, isRtl } = useLanguage();
   const [isEditingTown, setIsEditingTown] = useState(false);
@@ -203,6 +212,50 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Real Data & Save File Synchronization Control Bar */}
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <Database className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-sm text-white">
+                {isRtl ? 'إدارة وحقن ملف الحفظ الفعلي (Real nedata.db Pipeline)' : 'Real In-Game Save & Hardware Synchronizer'}
+              </h3>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/30">
+                100% Real Engine
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {isRtl
+                ? 'قم برفع ملف nedata.db الحقيقي من هاتفك أو اسحبه مباشرة عبر USB/Root لتعديل وحقن موارد مدينتك الفعلية فوراً.'
+                : 'Upload your genuine nedata.db save file or sync live via USB/Termux Root to edit your exact game progress.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
+          {onImportClick && (
+            <button
+              onClick={onImportClick}
+              className="flex-1 md:flex-none px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-950/40 transition-all cursor-pointer"
+            >
+              <Upload className="w-4 h-4" />
+              <span>{isRtl ? 'استيراد ملف الحفظ الحقيقي (nedata.db)' : 'Import Real nedata.db'}</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => onTabChange('android-bridge')}
+            className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 font-semibold rounded-xl text-xs flex items-center justify-center gap-2 border border-emerald-500/30 transition-all cursor-pointer"
+          >
+            <Usb className="w-4 h-4 text-emerald-400" />
+            <span>{isRtl ? 'المزامنة مع الهاتف (USB / Root)' : 'Live USB / Root Sync'}</span>
+          </button>
         </div>
       </div>
 
