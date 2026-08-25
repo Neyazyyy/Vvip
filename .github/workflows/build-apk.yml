@@ -32,8 +32,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
 
-      - name: Sync and Build Capacitor Android
+      - name: Regenerate and Build Capacitor Android
         run: |
+          rm -rf android
+          npx cap add android
           npx cap sync android
           cd android
           chmod +x gradlew
