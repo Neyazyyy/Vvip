@@ -1,158 +1,222 @@
 package com.playrix.township.vip;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText etVipKey;
-    private Button btnLogin, btnCopyId, btnBuyVip;
-    private String deviceId;
+    private WebView webView;
+    private ProgressBar progressBar;
 
-    // Real Firebase URL
-    private static final String FIREBASE_URL = "https://vip-5ea5f-default-rtdb.firebaseio.com/activation_codes.json";
+    private static final String APP_URL = "https://ais-pre-7kzdaidl53ztksazjvi7cn-891024645025.europe-west2.run.app/";
+    private static final String TOWNSHIP_PKG = "com.playrix.township";
+    private static final String TARGET_DB = "/data/data/" + TOWNSHIP_PKG + "/databases/nedata.db";
+    private static final String TARGET_DIR = "/data/data/" + TOWNSHIP_PKG + "/databases";
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Hardware Device ID
-        String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        deviceId = "DEV-" + (androidId != null ? androidId.toUpperCase().substring(0, Math.min(8, androidId.length())) : "8889");
+        webView = findViewById(R.id.webView);
+        progressBar = findViewById(R.id.progressBar);
 
-        etVipKey = findViewById(R.id.etVipKey);
-        btnLogin = findViewById(R.id.btnLogin);
-        btnCopyId = findViewById(R.id.btnCopyId);
-        btnBuyVip = findViewById(R.id.btnBuyVip);
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        // 1. Copy Device ID
-        btnCopyId.setOnClickListener(v -> {
-            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("Device ID", deviceId);
-            clipboard.setPrimaryClip(clip);
-            Toast.makeText(this, "⚙️ تم نسخ المعرف: " + deviceId, Toast.LENGTH_SHORT).show();
-        });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
 
-        // 2. Buy VIP Key
-        btnBuyVip.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Enreem"));
-            startActivity(intent);
-        });
+        webView.addJavascriptInterface(new WebAppInterface(this), "AndroidBridge");
 
-        // 3. Login & Verify Code
-        btnLogin.setOnClickListener(v -> {
-            String key = etVipKey.getText().toString().trim().toUpperCase();
-            if (key.isEmpty()) {
-                Toast.makeText(this, "الرجاء إدخال كود التفعيل", Toast.LENGTH_SHORT).show();
-                return;
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
             }
-            verifyCodeFromFirebase(key);
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                if (progressBar != null) progressBar.setVisibility(View.GONE);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                if (url.startsWith("https://t.me/") || url.startsWith("tg://") || url.startsWith("mailto:") || url.startsWith("tel:")) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        startActivity(intent);
+                        return true;
+                    } catch (Exception ignored) {}
+                }
+                return false;
+            }
         });
-    }
 
-    private void verifyCodeFromFirebase(String code) {
-        new Thread(() -> {
-            try {
-                URL url = new URL(FIREBASE_URL);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setConnectTimeout(6000);
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) response.append(line);
-                reader.close();
-
-                JSONObject data = new JSONObject(response.toString());
-                boolean found = false;
-                boolean isDeviceMatch = false;
-
-                for (int i = 0; i < data.names().length(); i++) {
-                    String key = data.names().getString(i);
-                    JSONObject item = data.getJSONObject(key);
-                    
-                    if (item.optString("code").equalsIgnoreCase(code)) {
-                        found = true;
-                        String usedBy = item.optString("used_by", "");
-                        
-                        if (usedBy.isEmpty() || usedBy.equals(deviceId)) {
-                            isDeviceMatch = true;
-                            bindDeviceToCode(item.getString("id"), deviceId);
-                        }
-                        break;
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                if (progressBar != null) {
+                    progressBar.setProgress(newProgress);
+                    if (newProgress == 100) {
+                        progressBar.setVisibility(View.GONE);
                     }
                 }
-
-                boolean finalFound = found;
-                boolean finalMatch = isDeviceMatch;
-
-                runOnUiThread(() -> {
-                    if (!finalFound) {
-                        Toast.makeText(this, "❌ كود التفعيل غير صحيح", Toast.LENGTH_LONG).show();
-                    } else if (!finalMatch) {
-                        Toast.makeText(this, "🚫 هذا الكود مقفل ومخصص لجهاز آخر فقط!", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(this, "👑 تم التفعيل بنجاح! جاري تعديل بيانات Township...", Toast.LENGTH_SHORT).show();
-                        injectRootTownshipMod();
-                    }
-                });
-
-            } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, "فشل الاتصال بسيرفر التحقق", Toast.LENGTH_SHORT).show());
             }
-        }).start();
+        });
+
+        webView.loadUrl(APP_URL);
     }
 
-    private void bindDeviceToCode(String recordId, String devId) {
-        try {
-            URL url = new URL("https://vip-5ea5f-default-rtdb.firebaseio.com/activation_codes/" + recordId + ".json");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("PATCH");
-            conn.setDoOutput(true);
-            conn.getOutputStream().write(("{\"used_by\":\"" + devId + "\",\"status\":\"used\"}").getBytes());
-            conn.getResponseCode();
-        } catch (Exception ignored) {}
+    @Override
+    public void onBackPressed() {
+        if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
     }
 
-    private void injectRootTownshipMod() {
-        new Thread(() -> {
+    public class WebAppInterface {
+        private final Context mContext;
+
+        public WebAppInterface(Context context) {
+            this.mContext = context;
+        }
+
+        @JavascriptInterface
+        public boolean isNativeApp() {
+            return true;
+        }
+
+        @JavascriptInterface
+        public String getDeviceId() {
+            try {
+                String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+                if (androidId != null && !androidId.isEmpty()) {
+                    return "DEV-" + androidId.toUpperCase().substring(0, Math.min(8, androidId.length()));
+                }
+            } catch (Exception ignored) {}
+            return "DEV-TSVIP8889";
+        }
+
+        @JavascriptInterface
+        public boolean isRootAvailable() {
+            try {
+                Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", "id"});
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line = reader.readLine();
+                process.waitFor();
+                return line != null && line.contains("uid=0");
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public String executeRootCommand(String command) {
+            StringBuilder output = new StringBuilder();
             try {
                 Process p = Runtime.getRuntime().exec("su");
                 DataOutputStream os = new DataOutputStream(p.getOutputStream());
+                BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                BufferedReader es = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
-                String pkg = "com.playrix.township";
-                String targetDir = "/data/data/" + pkg + "/databases";
-
-                os.writeBytes("am force-stop " + pkg + "\n");
-                os.writeBytes("chmod 771 " + targetDir + "\n");
-                os.writeBytes("monkey -p " + pkg + " -c android.intent.category.LAUNCHER 1\n");
+                os.writeBytes(command + "\n");
                 os.writeBytes("exit\n");
                 os.flush();
-                p.waitFor();
 
-                runOnUiThread(() -> Toast.makeText(this, "✅ تم تشغيل اللعبة بالمستوى والملايين!", Toast.LENGTH_LONG).show());
+                String line;
+                while ((line = is.readLine()) != null) output.append(line).append("\n");
+                while ((line = es.readLine()) != null) output.append("[ERR] ").append(line).append("\n");
+                p.waitFor();
             } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, "يرجى منح صلاحية الروت (Root Access)", Toast.LENGTH_SHORT).show());
+                return "ERROR: " + e.getMessage();
             }
-        }).start();
+            return output.toString().trim();
+        }
+
+        @JavascriptInterface
+        public boolean directInjectNedata(String nedataDbContent) {
+            try {
+                File tempFile = new File(mContext.getExternalCacheDir(), "nedata_temp.db");
+                FileOutputStream fos = new FileOutputStream(tempFile);
+                fos.write(nedataDbContent.getBytes());
+                fos.close();
+
+                String cmd = "am force-stop " + TOWNSHIP_PKG + "\n" +
+                        "mkdir -p " + TARGET_DIR + "\n" +
+                        "cp -f " + tempFile.getAbsolutePath() + " " + TARGET_DB + "\n" +
+                        "rm -f " + TARGET_DIR + "/nedata.db-journal " + TARGET_DIR + "/nedata.db-wal " + TARGET_DIR + "/nedata.db-shm\n" +
+                        "chmod 660 " + TARGET_DB + "\n" +
+                        "chmod 771 " + TARGET_DIR + "\n" +
+                        "monkey -p " + TOWNSHIP_PKG + " -c android.intent.category.LAUNCHER 1\n";
+
+                String res = executeRootCommand(cmd);
+                return !res.startsWith("ERROR");
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public void launchTownship() {
+            executeRootCommand("monkey -p " + TOWNSHIP_PKG + " -c android.intent.category.LAUNCHER 1");
+        }
+
+        @JavascriptInterface
+        public void copyToClipboard(String text) {
+            try {
+                ClipboardManager clipboard = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Township VIP", text);
+                clipboard.setPrimaryClip(clip);
+            } catch (Exception ignored) {}
+        }
+
+        @JavascriptInterface
+        public void showToast(String message) {
+            try {
+                Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+            } catch (Exception ignored) {}
+        }
     }
 }
