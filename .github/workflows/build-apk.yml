@@ -17,9 +17,9 @@ jobs:
       with:
         node-version: 18
 
-    - name: Clean and Install Dependencies
+    - name: Clean Install Dependencies
       run: |
-        rm -rf node_modules package-lock.json
+        rm -rf node_modules bun.lock package-lock.json
         npm install
 
     - name: Build Web Assets
